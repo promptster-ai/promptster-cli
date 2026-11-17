@@ -7,10 +7,14 @@
 # compiled into the binaries it builds.
 name: CI
 
+# PR-only. The automerge gate requires this workflow's `test` on the PR
+# before it squash-merges, and release.yml re-runs the same gate on the `v*`
+# tag before it publishes, so nothing reads a run on main. The PR run tests the
+# PR merged onto main as it was then; if two PRs land back to back, run this
+# workflow by hand (workflow_dispatch) to check main.
 on:
   pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   test:

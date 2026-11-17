@@ -3,10 +3,14 @@
 # blocker; this one runs it while the change is still reviewable.
 name: Packaging
 
+# PR-only. The automerge gate requires this workflow's `install-check` on the PR
+# before it squash-merges, and release.yml re-runs the same gate on the `v*`
+# tag before it publishes, so nothing reads a run on main. The PR run tests the
+# PR merged onto main as it was then; if two PRs land back to back, run this
+# workflow by hand (workflow_dispatch) to check main.
 on:
   pull_request:
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
   install-check:

@@ -134,3 +134,10 @@ func TestSubmitCodeErrorIsOneLineWithoutHTML(t *testing.T) {
 		t.Fatalf("err = %q", err)
 	}
 }
+
+func TestAPIErrorSuffixKeepsLongJSONWhole(t *testing.T) {
+	body := `{"error":"` + strings.Repeat("x", 500) + `","code":"bundle_size_mismatch","expected":1,"actual":2}`
+	if got := apiErrorSuffix([]byte(body)); got != ": "+body {
+		t.Fatalf("suffix = %q, want the whole body", got)
+	}
+}

@@ -373,18 +373,15 @@ func postSubmitCode(token string, data []byte, gzipped bool) (blocked bool, err 
 
 // apiErrorSuffix is ": <body>" for a JSON error body, compacted to one line,
 // or "" for anything else: a candidate reads this, and a proxy's HTML page is
-// not a message. The JSON stays whole so the recorded failure keeps its code
-// and fields (bundle_size_mismatch's expected/actual).
+// not a message. The JSON stays whole, uncut, so the recorded failure keeps
+// its code and fields (bundle_size_mismatch's expected/actual).
 func apiErrorSuffix(body []byte) string {
 	var buf bytes.Buffer
 	if json.Compact(&buf, bytes.TrimSpace(body)) != nil || buf.Len() == 0 {
 		return ""
 	}
-	msg := []rune(buf.String())
-	if len(msg) > 300 {
-		msg = append(msg[:300], []rune("...")...)
-	}
-	return ": " + string(msg)
+	// No cap: callers read at most 4 KB, and a body cut there isn't valid JSON.
+	return ": " + buf.String()
 }
 
 // recordSubmissionCommit makes the audit-trail commit.

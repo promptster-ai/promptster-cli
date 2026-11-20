@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strings"
 	"time"
 )
 
@@ -513,7 +512,7 @@ func apiGetUploadURL(sessionToken, sessionID string) (UploadURLResponse, error) 
 		if apiErrorCode(respBody) == "assessment_closed" {
 			return UploadURLResponse{}, errAssessmentClosed
 		}
-		return UploadURLResponse{}, fmt.Errorf("HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+		return UploadURLResponse{}, fmt.Errorf("HTTP %d%s", resp.StatusCode, apiErrorSuffix(respBody))
 	}
 
 	var result UploadURLResponse
@@ -570,7 +569,7 @@ func uploadBundleOnce(client *http.Client, uploadURL, tarballPath string, size i
 		return nil
 	}
 	body, _ := io.ReadAll(io.LimitReader(resp.Body, 1024))
-	msg := fmt.Sprintf("HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+	msg := fmt.Sprintf("HTTP %d%s", resp.StatusCode, apiErrorSuffix(body))
 	return &uploadError{retryable: resp.StatusCode >= 500, msg: msg}
 }
 

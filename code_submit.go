@@ -307,35 +307,84 @@ func hasHeadParent(taskRoot string) bool {
 }
 
 // apiSubmitCode notifies the backend that the candidate's tarball is uploaded.
+// A submission Render's edge WAF blocks is sent once more gzipped (see
+// edge_block.go): a diff holding `python -m src.run_experiment --rank-ratio
+// 0.7 1.0` was blocked twice, so `promptster done` could not complete.
 func apiSubmitCode(token string, payload submitCodePayload) error {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return fmt.Errorf("marshal payload: %w", err)
 	}
+	blocked, err := postSubmitCode(token, data, false)
+	if blocked {
+		hookDebugf("submit-code: edge blocked the plain send, resending gzipped")
+		var gzErr error
+		if blocked, gzErr = postSubmitCode(token, data, true); blocked {
+			// Retrying sends the same bytes, so don't let "retry" read as the fix.
+			return errors.New("the network edge blocked this submission (HTTP 403), plain and gzipped; " +
+				"a retry sends the same bytes, so contact your recruiter")
+		}
+		if gzErr != nil {
+			return fmt.Errorf("blocked by the network edge (HTTP 403); gzipped resend: %w", gzErr)
+		}
+		return nil
+	}
+	return err
+}
 
-	url := fmt.Sprintf("%s/v1/candidate/submit-code", apiURL())
-	req, err := http.NewRequest(http.MethodPost, url, bytes.NewReader(data))
+// postSubmitCode sends one submit-code request. blocked is true when the edge
+// refused it, not the API.
+func postSubmitCode(token string, data []byte, gzipped bool) (blocked bool, err error) {
+	body := data
+	if gzipped {
+		if body, err = gzipBytes(data); err != nil {
+			return false, fmt.Errorf("gzip payload: %w", err)
+		}
+	}
+	req, err := http.NewRequest(http.MethodPost, apiURL()+"/v1/candidate/submit-code", bytes.NewReader(body))
 	if err != nil {
-		return err
+		return false, err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if gzipped {
+		req.Header.Set("Content-Encoding", "gzip")
+	}
 	req.Header.Set("X-API-Key", token)
 
 	client := &http.Client{Timeout: 30 * time.Second}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 300 {
-		body, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		if apiErrorCode(body) == "assessment_closed" {
-			return errAssessmentClosed
+		if edgeBlocked(resp) {
+			return true, nil
 		}
-		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, strings.TrimSpace(string(body)))
+		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		if apiErrorCode(respBody) == "assessment_closed" {
+			return false, errAssessmentClosed
+		}
+		return false, fmt.Errorf("HTTP %d%s", resp.StatusCode, apiErrorSuffix(respBody))
 	}
-	return nil
+	return false, nil
+}
+
+// apiErrorSuffix is ": <body>" for a JSON error body, compacted to one line,
+// or "" for anything else: a candidate reads this, and a proxy's HTML page is
+// not a message. The JSON stays whole so the recorded failure keeps its code
+// and fields (bundle_size_mismatch's expected/actual).
+func apiErrorSuffix(body []byte) string {
+	var buf bytes.Buffer
+	if json.Compact(&buf, bytes.TrimSpace(body)) != nil || buf.Len() == 0 {
+		return ""
+	}
+	msg := []rune(buf.String())
+	if len(msg) > 300 {
+		msg = append(msg[:300], []rune("...")...)
+	}
+	return ": " + string(msg)
 }
 
 // recordSubmissionCommit makes the audit-trail commit.

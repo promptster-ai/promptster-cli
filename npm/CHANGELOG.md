@@ -1,5 +1,9 @@
 # CLI Changelog
 
+## 1.13.5 - 2026-11-20
+
+- fix(capture): a capture event that Render's edge WAF blocks is resent gzipped instead of dropped. The edge answers some event bodies with a 403 HTML "Blocked" page before they reach the API; a Claude Code `Bash` call like `(source .venv/bin/activate 2>/dev/null; python -m pytest -q 2>&1 | tail -30)` was one. The hook treated that as a permanent rejection, so the session lost its `tool_intent` and `command` events, the hash chain had gaps there, and grading said no tests were run. `ingestEventWithClient` still sends plain first, and on a 403 with an HTML Content-Type (the edge's page, never the API's JSON) sends the same signed bytes once more gzipped. That covers every capture path: hooks, the queued-prompt outbox, the git watcher, the shell hook, decision capture and the codex/claude watchers. Needs promptster-hire-backend#68, which inflates gzipped `/v1/hooks/ingest` bodies; against an older API the resend gets a 400 and the event is dropped as before (#78)
+
 ## 1.13.4 - 2026-11-11
 
 - chore(vsix): embed promptster-vscode 0.3.17, up from 0.3.2. `promptster start` sideloads the embedded `.vsix` with `--force` on every run, so every CLI since 1.10.1 installed 0.3.2 and a candidate on their own machine never got 0.3.3 through 0.3.17. That missing range includes the Assessment and Teammates views, Jordan's check-ins, the time-left and budget status bar items, and the fix that stops agent file writes from being counted as pastes. 0.3.17 also keeps the Teammates message box in view with three teammates on the roster, and shows a sent message at once with typing dots until the reply arrives. Built reproducibly from promptster-vscode `v0.3.17` (sha256 `e368ea36…7cd9`)

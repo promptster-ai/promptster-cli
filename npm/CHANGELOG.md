@@ -1,5 +1,9 @@
 # CLI Changelog
 
+## 1.13.8 - 2026-11-21
+
+- chore(vsix): embed promptster-vscode 0.3.20, up from 0.3.19. The submit confirmation now says it submits now: "Review & submit" opened a modal promising a review step that doesn't exist, while confirming ran `promptster done` at once. The modal asks "Submit your assessment now?" with a "Submit now" button, says the upload can't be undone, and shows the time left, the changed files as `promptster done` sees them, that secret files are left out, and how many unsaved editors will be saved first. Built reproducibly from promptster-vscode `v0.3.20` (sha256 `5e3aec70…2d8e`)
+
 ## 1.13.7 - 2026-11-21
 
 - fix(submit): a `submit-code` that Render's edge WAF blocks is resent gzipped. The edge 403'd submissions whose diff contained shell-command text (e.g. a REVIEW.md quoting `` `python -m src.run_experiment --rank-ratio 0.7 1.0` ``), so `promptster done` failed and only the server's timer auto-submit saved the work. Covers `done` and the periodic snapshot; `done`'s errors are now one line, never an HTML page. Needs promptster-hire-backend#77, live (#81, #82)

@@ -1,5 +1,10 @@
 # CLI Changelog
 
+## 1.13.7 - 2026-11-21
+
+- fix(submit): a `submit-code` that Render's edge WAF blocks is resent gzipped. The edge 403'd submissions whose diff contained shell-command text (e.g. a REVIEW.md quoting `` `python -m src.run_experiment --rank-ratio 0.7 1.0` ``), so `promptster done` failed and only the server's timer auto-submit saved the work. Covers `done` and the periodic snapshot; `done`'s errors are now one line, never an HTML page. Needs promptster-hire-backend#77, live (#81, #82)
+- chore(vsix): embed promptster-vscode 0.3.19, up from 0.3.18. "Open ticket" renders the ticket in a webview panel and no longer writes `TASK.html` into the candidate's repo (where it was submitted as their work); the ticket's markdown renders; the Captured Signals page describes only the extension; Submit stays visible without scrolling. Built reproducibly from promptster-vscode `v0.3.19` (sha256 `c03d2b69…c766`)
+
 ## 1.13.6 - 2026-11-20
 
 - chore(vsix): embed promptster-vscode 0.3.18, up from 0.3.17. 0.3.18 gives the editor extension the same fix 1.13.5 gave the CLI: an ingest event that Render's edge WAF answers with an HTML 403 is resent once gzipped instead of dropped, so a blocked terminal command like `python -m pytest -q` is no longer lost from the extension's capture either. Built reproducibly from promptster-vscode `v0.3.18` (sha256 `0aa26954…0315`)

@@ -1,5 +1,9 @@
 # CLI Changelog
 
+## 1.13.9 - 2026-11-21
+
+- chore(vsix): embed promptster-vscode 0.3.21, up from 0.3.20. The submit confirmation no longer lists a new `.env`, `.npmrc` or private key among the changed files while saying secret files are left out: it now drops them by this CLI's `isSecretFile` rules, keeping a secret-named file the base commit tracks (a fixture), as the upload does. `fileFilter.go` now notes the copy in promptster-vscode. Built reproducibly from promptster-vscode `v0.3.21` (sha256 `0690cd1a…9b63`)
+
 ## 1.13.8 - 2026-11-21
 
 - chore(vsix): embed promptster-vscode 0.3.20, up from 0.3.19. The submit confirmation now says it submits now: "Review & submit" opened a modal promising a review step that doesn't exist, while confirming ran `promptster done` at once. The modal asks "Submit your assessment now?" with a "Submit now" button, says the upload can't be undone, and shows the time left, the changed files as `promptster done` sees them, that secret files are left out, and how many unsaved editors will be saved first. Built reproducibly from promptster-vscode `v0.3.20` (sha256 `5e3aec70…2d8e`)

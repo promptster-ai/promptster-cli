@@ -100,6 +100,10 @@ func shouldBundleFile(path string, size int64) bool {
 // ported one-for-one. This is the ONE list every staging/upload path uses:
 // gitAddExcludePathspecs (git add in submit, snapshot, git watcher) and
 // bundleWorkspace (the tarball).
+//
+// promptster-vscode copies these lists and isSecretFile (src/utils/secretFiles.ts,
+// pinned by test/unit/secretFiles.test.ts) so the submit confirmation lists what
+// this leaves out. Change that copy with this one.
 
 // excludedSecretFileNames: exact basenames that are credentials, never source.
 var excludedSecretFileNames = map[string]struct{}{

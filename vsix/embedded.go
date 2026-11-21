@@ -19,21 +19,21 @@ import (
 	"encoding/hex"
 )
 
-//go:embed promptster-0.3.20.vsix
+//go:embed promptster-0.3.21.vsix
 var artifact []byte
 
 const (
 	// Version of the embedded extension. Must match the filename above and the
 	// version in the extension's package.json at the tag.
-	Version = "0.3.20"
+	Version = "0.3.21"
 
 	// Tag in pa-arth/promptster-vscode this artifact was built from.
-	SourceTag = "v0.3.20"
+	SourceTag = "v0.3.21"
 
 	// SHA256 is the pinned checksum of the embedded artifact, hex-encoded.
 	// Recorded on the session when the extension is installed, so a reviewer
 	// can tell which build produced a candidate's attention events.
-	SHA256 = "5e3aec705bf230cba36decc3979e4b1aa9e30a9b2667de3597eb45683e982d8e"
+	SHA256 = "0690cd1a9e0f4eea2d27ee9c44775428bd90071d65d3561f3f4c4e0520a89b63"
 )
 
 // Bytes returns the embedded .vsix.

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"strings"
 	"testing"
 )
@@ -132,6 +133,34 @@ func TestRedeemedSessionKeepsCadenceAnswer(t *testing.T) {
 		}
 		if saved.ConsentToIntegrity != answer {
 			t.Errorf("answer=%v: saved session has ConsentToIntegrity=%v", answer, saved.ConsentToIntegrity)
+		}
+	}
+}
+
+// The editor extension counts typing (burst sizes, and the average time between
+// keystrokes under the cadence opt-in), so "keystrokes are not captured" is
+// false. What is never captured is which keys were pressed.
+func TestNoClaimThatKeystrokesAreNotCaptured(t *testing.T) {
+	for _, line := range fallbackDisclosure.DoesNotCapture {
+		if strings.HasPrefix(strings.ToLower(line), "keystrokes") {
+			t.Errorf("fallback says keystrokes are not captured: %q", line)
+		}
+	}
+}
+
+// The cadence opt-in is the switch that turns on keystroke timing, so its
+// prompt must say so rather than claim no keystrokes are captured.
+func TestCadencePromptDisclosesKeystrokeTiming(t *testing.T) {
+	out := captureStdout(t, func() {
+		askCadenceOptIn(bufio.NewScanner(strings.NewReader("no\n")))
+	})
+	lower := strings.ToLower(out)
+	if strings.Contains(lower, "no keystrokes are captured") {
+		t.Errorf("cadence prompt claims no keystrokes are captured:\n%s", out)
+	}
+	for _, want := range []string{"average time", "between keystrokes", "which keys you press is never captured"} {
+		if !strings.Contains(lower, want) {
+			t.Errorf("cadence prompt missing %q:\n%s", want, out)
 		}
 	}
 }

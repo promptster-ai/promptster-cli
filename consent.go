@@ -39,7 +39,7 @@ var fallbackDisclosure = ConsentDisclosure{
 		"Anonymized device info for session continuity",
 	},
 	DoesNotCapture: []string{
-		"Keystrokes, clipboard contents, or screen recordings",
+		"Which keys you press, clipboard contents, or screen recordings — the editor extension counts how much you type and when, not which keys",
 		"File contents you never open or edit",
 		"Environment variables and secrets — .env files, .npmrc, SSH and cloud credentials, and private keys are excluded by name before anything is stored",
 		"Browser history, personal tabs, webcam, or microphone",
@@ -206,8 +206,9 @@ func printDisclosure(d ConsentDisclosure) {
 func askCadenceOptIn(scanner *bufio.Scanner) bool {
 	dim := lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
 	fmt.Println("  Optional: allow cadence-based authorship checks?")
-	fmt.Println(dim.Render("  Records timing between your prompts and commands so reviewers can"))
-	fmt.Println(dim.Render("  distinguish typed work from pasted work. No keystrokes are captured."))
+	fmt.Println(dim.Render("  Records timing between your prompts and commands, and the average time"))
+	fmt.Println(dim.Render("  between keystrokes in the editor, so reviewers can distinguish typed"))
+	fmt.Println(dim.Render("  work from pasted work. Which keys you press is never captured."))
 	fmt.Print("  Enable? [yes/no]: ")
 
 	if scanner.Scan() {

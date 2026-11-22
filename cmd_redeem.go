@@ -81,8 +81,12 @@ func cmdRedeem(args []string) {
 		// Recorded, not acted on — see RedeemResponse.AuthMode.
 		AuthMode:        resp.AuthMode,
 		ConsentAccepted: true,
-		StartedAt:       time.Now().UTC(),
-		ExpiresAt:       parseExpiresAt(resp.ExpiresAt),
+		// The candidate's own answer to the cadence question. Without it, `start`
+		// sees ConsentAccepted and skips its consent block, so a "yes" given
+		// here was dropped and cadence stayed off.
+		ConsentToIntegrity: result.IntegrityAccepted,
+		StartedAt:          time.Now().UTC(),
+		ExpiresAt:          parseExpiresAt(resp.ExpiresAt),
 	}
 	if err := saveSession(session); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: could not save session: %v\n", err)

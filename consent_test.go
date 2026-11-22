@@ -95,3 +95,20 @@ func TestConsentResultCarriesHashOnlyWhenServerTextWasShown(t *testing.T) {
 		}
 	})
 }
+
+// --accept-tos accepts the terms without asking anything, so it must not opt
+// the candidate into cadence checks: both disclosures make those an explicit,
+// separate choice ("only if you enable cadence checks"), and the hosted one
+// does not mention them at all.
+func TestAcceptTosDoesNotOptIntoCadence(t *testing.T) {
+	server := ConsentDisclosure{Version: "v6", Captures: []string{"x"}, TosURL: fallbackTosURL}
+	for _, alreadyConfirmed := range []bool{false, true} {
+		got := runConsent(server, "h", alreadyConfirmed, true)
+		if !got.Accepted {
+			t.Fatalf("alreadyConfirmed=%v: --accept-tos should accept", alreadyConfirmed)
+		}
+		if got.IntegrityAccepted {
+			t.Errorf("alreadyConfirmed=%v: --accept-tos turned cadence checks on without asking", alreadyConfirmed)
+		}
+	}
+}

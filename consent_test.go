@@ -135,3 +135,14 @@ func TestRedeemedSessionKeepsCadenceAnswer(t *testing.T) {
 		}
 	}
 }
+
+// The editor extension counts typing (burst sizes, and the average time between
+// keystrokes under the cadence opt-in), so "keystrokes are not captured" is
+// false. What is never captured is which keys were pressed.
+func TestNoClaimThatKeystrokesAreNotCaptured(t *testing.T) {
+	for _, line := range fallbackDisclosure.DoesNotCapture {
+		if strings.HasPrefix(strings.ToLower(line), "keystrokes") {
+			t.Errorf("fallback says keystrokes are not captured: %q", line)
+		}
+	}
+}

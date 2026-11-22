@@ -95,3 +95,43 @@ func TestConsentResultCarriesHashOnlyWhenServerTextWasShown(t *testing.T) {
 		}
 	})
 }
+
+// --accept-tos accepts the terms without asking anything, so it must not opt
+// the candidate into cadence checks: both disclosures make those an explicit,
+// separate choice ("only if you enable cadence checks"), and the hosted one
+// does not mention them at all.
+func TestAcceptTosDoesNotOptIntoCadence(t *testing.T) {
+	server := ConsentDisclosure{Version: "v6", Captures: []string{"x"}, TosURL: fallbackTosURL}
+	for _, alreadyConfirmed := range []bool{false, true} {
+		got := runConsent(server, "h", alreadyConfirmed, true)
+		if !got.Accepted {
+			t.Fatalf("alreadyConfirmed=%v: --accept-tos should accept", alreadyConfirmed)
+		}
+		if got.IntegrityAccepted {
+			t.Errorf("alreadyConfirmed=%v: --accept-tos turned cadence checks on without asking", alreadyConfirmed)
+		}
+	}
+}
+
+// The cadence answer given during `redeem` must survive into the session that
+// `start` loads: start sees ConsentAccepted and skips its consent block, so the
+// saved session is the only place the answer can come from.
+func TestRedeemedSessionKeepsCadenceAnswer(t *testing.T) {
+	for _, answer := range []bool{true, false} {
+		t.Setenv("PROMPTSTER_STATE_DIR", t.TempDir())
+		s := redeemedSession("PST-TEST-0000", RedeemResponse{SessionID: "s1"}, ConsentResult{Accepted: true, IntegrityAccepted: answer})
+		if err := saveSession(s); err != nil {
+			t.Fatalf("saveSession: %v", err)
+		}
+		saved, err := loadSession()
+		if err != nil {
+			t.Fatalf("loadSession: %v", err)
+		}
+		if !saved.ConsentAccepted {
+			t.Errorf("answer=%v: saved session lost ConsentAccepted", answer)
+		}
+		if saved.ConsentToIntegrity != answer {
+			t.Errorf("answer=%v: saved session has ConsentToIntegrity=%v", answer, saved.ConsentToIntegrity)
+		}
+	}
+}

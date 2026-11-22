@@ -41,7 +41,8 @@ go install github.com/promptster-ai/promptster-cli@latest
 | `promptster abort` / `reset` | Tear down the session / wipe local state |
 
 Non-interactive flags for scripted use: `start --accept-tos --workspace PATH`,
-`done --auto`, `status --json`, `brief --json`.
+`done --auto`, `status --json`, `brief --json`. `--accept-tos` accepts the
+terms only: cadence checks stay off, since nobody was asked.
 
 ## Using it with your own backend
 

@@ -78,7 +78,10 @@ type ConsentResult struct {
 // disclosure is the canonical capture text (server-provided; pass a zero value
 // to fall back to the embedded list). The three branches:
 //  1. acceptTosFlag (--accept-tos): auto-accept, but STILL print the disclosure so
-//     even scripted/CI runs leave a displayed record. Integrity defaults on.
+//     even scripted/CI runs leave a displayed record. Cadence checks stay OFF:
+//     nobody was asked, and neither web consent covers them (the local
+//     disclosure says "only if you enable cadence checks"; the hosted one has
+//     no cadence clause at all). Accepting the terms is not opting in.
 //  2. alreadyConfirmed (consent already given via the web flow): skip re-showing
 //     the full disclosure, but STILL ask the one cadence question so the opt-in
 //     stays explicit. Non-interactive → integrity defaults off.
@@ -97,9 +100,9 @@ func runConsent(disclosure ConsentDisclosure, disclosureHash string, alreadyConf
 	if acceptTosFlag {
 		printDisclosure(disclosure)
 		dim := lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
-		fmt.Println(dim.Render("  Terms accepted via --accept-tos."))
+		fmt.Println(dim.Render("  Terms accepted via --accept-tos. Cadence checks: off (not asked)."))
 		fmt.Println()
-		return ConsentResult{Accepted: true, Note: "(--accept-tos)", IntegrityAccepted: true, DisclosureHash: disclosureHash}
+		return ConsentResult{Accepted: true, Note: "(--accept-tos)", IntegrityAccepted: false, DisclosureHash: disclosureHash}
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)

@@ -237,7 +237,8 @@ Aliases:
   cleanup                      Same as abort (legacy name)
 
 Flags for start:
-  --accept-tos      Accept terms of service non-interactively (scripted use)
+  --accept-tos      Accept terms of service non-interactively (scripted use;
+                    cadence checks stay off)
   --workspace PATH  Use PATH as workspace directory (skip interactive prompt)
   --adopt           Use the checkout that is already here instead of cloning one
                     (implied by --seeded; --adopt=false forces a clone)
@@ -250,7 +251,8 @@ Flags for done:
   --auto            Auto-submit mode (skip pending-decision check)
 
 Flags for redeem:
-  --accept-tos      Accept terms of service non-interactively (scripted use)
+  --accept-tos      Accept terms of service non-interactively (scripted use;
+                    cadence checks stay off)
 
 Flags for reset:
   --purge           Also remove the installed binary (full uninstall)

@@ -61,33 +61,7 @@ func cmdRedeem(args []string) {
 	}
 
 	// Persist session so `start` can use saved session data.
-	session := Session{
-		SessionID:         resp.SessionID,
-		SessionToken:      resp.SessionToken,
-		Key:               key,
-		AssessmentID:      resp.AssessmentID,
-		AssessmentTitle:   resp.AssessmentTitle,
-		OrgName:           resp.OrgName,
-		TaskBrief:         resp.TaskBrief,
-		Brief:             resp.Brief,
-		RepoURL:           resp.RepoURL,
-		RepoCommit:        resp.RepoCommit,
-		RepoSubdir:        resp.RepoSubdir,
-		SetupInstructions: resp.SetupInstructions,
-		ExpectedTreeSha:   resp.ExpectedTreeSha,
-		TimeLimitMinutes:  resp.TimeLimitMinutes,
-		IssueID:           resp.IssueID,
-		AllowedTools:      resp.AllowedTools,
-		// Recorded, not acted on — see RedeemResponse.AuthMode.
-		AuthMode:        resp.AuthMode,
-		ConsentAccepted: true,
-		// The candidate's own answer to the cadence question. Without it, `start`
-		// sees ConsentAccepted and skips its consent block, so a "yes" given
-		// here was dropped and cadence stayed off.
-		ConsentToIntegrity: result.IntegrityAccepted,
-		StartedAt:          time.Now().UTC(),
-		ExpiresAt:          parseExpiresAt(resp.ExpiresAt),
-	}
+	session := redeemedSession(key, resp, result)
 	if err := saveSession(session); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: could not save session: %v\n", err)
 	}
@@ -121,4 +95,37 @@ func cmdRedeem(args []string) {
 	fmt.Println()
 	fmt.Println("  Run \033[1mpromptster start\033[0m when ready.")
 	fmt.Println()
+}
+
+// redeemedSession builds the session `redeem` persists for `start` to pick up.
+// It carries the consent result too: `start` skips its consent block when
+// ConsentAccepted is set, so anything not saved here never reaches it.
+func redeemedSession(key string, resp RedeemResponse, result ConsentResult) Session {
+	return Session{
+		SessionID:         resp.SessionID,
+		SessionToken:      resp.SessionToken,
+		Key:               key,
+		AssessmentID:      resp.AssessmentID,
+		AssessmentTitle:   resp.AssessmentTitle,
+		OrgName:           resp.OrgName,
+		TaskBrief:         resp.TaskBrief,
+		Brief:             resp.Brief,
+		RepoURL:           resp.RepoURL,
+		RepoCommit:        resp.RepoCommit,
+		RepoSubdir:        resp.RepoSubdir,
+		SetupInstructions: resp.SetupInstructions,
+		ExpectedTreeSha:   resp.ExpectedTreeSha,
+		TimeLimitMinutes:  resp.TimeLimitMinutes,
+		IssueID:           resp.IssueID,
+		AllowedTools:      resp.AllowedTools,
+		// Recorded, not acted on — see RedeemResponse.AuthMode.
+		AuthMode:        resp.AuthMode,
+		ConsentAccepted: true,
+		// The candidate's own answer to the cadence question. Without it, `start`
+		// sees ConsentAccepted and skips its consent block, so a "yes" given
+		// here was dropped and cadence stayed off.
+		ConsentToIntegrity: result.IntegrityAccepted,
+		StartedAt:          time.Now().UTC(),
+		ExpiresAt:          parseExpiresAt(resp.ExpiresAt),
+	}
 }

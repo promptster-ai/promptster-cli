@@ -112,3 +112,26 @@ func TestAcceptTosDoesNotOptIntoCadence(t *testing.T) {
 		}
 	}
 }
+
+// The cadence answer given during `redeem` must survive into the session that
+// `start` loads: start sees ConsentAccepted and skips its consent block, so the
+// saved session is the only place the answer can come from.
+func TestRedeemedSessionKeepsCadenceAnswer(t *testing.T) {
+	for _, answer := range []bool{true, false} {
+		t.Setenv("PROMPTSTER_STATE_DIR", t.TempDir())
+		s := redeemedSession("PST-TEST-0000", RedeemResponse{SessionID: "s1"}, ConsentResult{Accepted: true, IntegrityAccepted: answer})
+		if err := saveSession(s); err != nil {
+			t.Fatalf("saveSession: %v", err)
+		}
+		saved, err := loadSession()
+		if err != nil {
+			t.Fatalf("loadSession: %v", err)
+		}
+		if !saved.ConsentAccepted {
+			t.Errorf("answer=%v: saved session lost ConsentAccepted", answer)
+		}
+		if saved.ConsentToIntegrity != answer {
+			t.Errorf("answer=%v: saved session has ConsentToIntegrity=%v", answer, saved.ConsentToIntegrity)
+		}
+	}
+}

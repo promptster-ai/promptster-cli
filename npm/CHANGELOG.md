@@ -1,5 +1,11 @@
 # CLI Changelog
 
+## 1.13.10 - 2026-11-21
+
+- fix(consent): cadence checks follow the candidate's own answer. `--accept-tos` no longer opts into cadence checks (it prints "Cadence checks: off (not asked)."), and `redeem` now saves the candidate's cadence answer in the session, so an explicit "yes" is no longer dropped (#86)
+- fix(consent): stop saying keystrokes are not captured. The offline fallback disclosure and the cadence opt-in prompt now say which keys you press is never captured, while the editor extension counts how much you type and when (#87)
+- chore(vsix): embed promptster-vscode 0.3.22, up from 0.3.21. Terminal commands no longer leak a key typed as a word: a key-shaped token is never shown as the program or subcommand (a pasted key shows as `<redacted>`), the arguments of `echo`, `printf`, `export` and the like are treated as data, and more secret-bearing commands are flagged. Built reproducibly from promptster-vscode `v0.3.22` (sha256 `3c353622…47ce`)
+
 ## 1.13.9 - 2026-11-21
 
 - chore(vsix): embed promptster-vscode 0.3.21, up from 0.3.20. The submit confirmation no longer lists a new `.env`, `.npmrc` or private key among the changed files while saying secret files are left out: it now drops them by this CLI's `isSecretFile` rules, keeping a secret-named file the base commit tracks (a fixture), as the upload does. `fileFilter.go` now notes the copy in promptster-vscode. Built reproducibly from promptster-vscode `v0.3.21` (sha256 `0690cd1a…9b63`)
